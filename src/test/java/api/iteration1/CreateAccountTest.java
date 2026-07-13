@@ -1,9 +1,12 @@
 package api.iteration1;
 
 import api.base.BaseTest;
+import api.dao.AccountDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.models.AccountModel;
 import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
+import api.requests.steps.DataBaseSteps;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.usersteps.UserSteps;
@@ -26,5 +29,10 @@ public class CreateAccountTest extends BaseTest {
 
         assertThat(foundAccount.getId()).isEqualTo(createdAccount.getId());
         assertThat(foundAccount.getAccountNumber()).isEqualTo(createdAccount.getAccountNumber());
+
+        //BD
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createdAccount.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(createdAccount, accountDao).match();
     }
 }

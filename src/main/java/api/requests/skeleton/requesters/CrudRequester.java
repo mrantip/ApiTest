@@ -12,9 +12,17 @@ import api.requests.skeleton.interfaces.GetAllEndpointInterface;
 import static io.restassured.RestAssured.given;
 
 public class CrudRequester extends HttpRequest implements CrudEndpointInterface, GetAllEndpointInterface {
+    private final RequestSpecification requestSpecification;
+    private final Endpoint endpoint;
+    private final ResponseSpecification responseSpecification;
+
     public CrudRequester(RequestSpecification requestSpecification, Endpoint endpoint, ResponseSpecification responseSpecification) {
         super(requestSpecification, endpoint, responseSpecification);
+        this.requestSpecification = requestSpecification;
+        this.endpoint = endpoint;
+        this.responseSpecification = responseSpecification;
     }
+
 
     @Override
     public ValidatableResponse post(BaseModel model) {
@@ -39,7 +47,13 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
 
     @Override
     public ValidatableResponse get(long id) {
-        return null;
+        String url = endpoint.getUrl().replace("{id}", String.valueOf(id));
+            return given()
+                    .spec(requestSpecification)
+                    .get(url)
+                    .then()
+                    .assertThat()
+                    .spec(responseSpecification);
     }
 
     public ValidatableResponse get() {

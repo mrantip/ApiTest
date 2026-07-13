@@ -1,9 +1,13 @@
 package api.iteration2;
 
 import api.base.BaseTest;
+import api.dao.AccountDao;
+import api.dao.comparison.DaoAndModelAssertions;
+import api.models.AccountModel;
 import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.models.TransferResponse;
+import api.requests.steps.DataBaseSteps;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -37,6 +41,16 @@ public class TransferMoneyTest extends BaseTest {
         assertThat(transferSum).isEqualTo(transferResponse.getAmount());
         assertThat(currentBalanceFirst).isNotEqualTo(userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber()).getBalance());
         assertThat(currentBalanceSecond).isNotEqualTo(userSteps.getAccountByNumber(createdAccountSecond.getAccountNumber()).getBalance());
+
+        //BD
+        AccountModel foundAccountFirst = userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber());
+        AccountModel foundAccountSecond = userSteps.getAccountByNumber(createdAccountSecond .getAccountNumber());
+
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createdAccountFirst.getAccountNumber());
+        AccountDao accountDaoStranger = DataBaseSteps.getAccountByAccountNumber(createdAccountSecond.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(foundAccountFirst, accountDao).match();
+        DaoAndModelAssertions.assertThat(foundAccountSecond, accountDaoStranger).match();
     }
 
 
@@ -63,6 +77,17 @@ public class TransferMoneyTest extends BaseTest {
         assertThat(transferSum).isEqualTo(transferResponse.getAmount());
         assertThat(currentBalance).isNotEqualTo(userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber()).getBalance());
         assertThat(currentBalanceStranger).isNotEqualTo(userStepsStranger.getAccountByNumber(createdAccountStranger.getAccountNumber()).getBalance());
+
+        //BD
+        AccountModel foundAccountFirst = userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber());
+        AccountModel foundAccountStranger= userStepsStranger.getAccountByNumber(createdAccountStranger .getAccountNumber());
+
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createdAccountFirst.getAccountNumber());
+        AccountDao accountDaoStranger = DataBaseSteps.getAccountByAccountNumber(createdAccountStranger.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(foundAccountFirst, accountDao).match();
+        DaoAndModelAssertions.assertThat(foundAccountStranger, accountDaoStranger).match();
+
     }
 
     @ParameterizedTest
@@ -83,6 +108,16 @@ public class TransferMoneyTest extends BaseTest {
 
         assertThat(currentBalanceFirst).isEqualTo(userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber()).getBalance());
         assertThat(currentBalanceSecond).isEqualTo(userSteps.getAccountByNumber(createdAccountSecond.getAccountNumber()).getBalance());
+
+        //BD
+        AccountModel foundAccountFirst = userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber());
+        AccountModel foundAccountSecond = userSteps.getAccountByNumber(createdAccountSecond .getAccountNumber());
+
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createdAccountFirst.getAccountNumber());
+        AccountDao accountDaoStranger = DataBaseSteps.getAccountByAccountNumber(createdAccountSecond.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(foundAccountFirst, accountDao).match();
+        DaoAndModelAssertions.assertThat(foundAccountSecond, accountDaoStranger).match();
     }
 
     @Test
@@ -106,6 +141,16 @@ public class TransferMoneyTest extends BaseTest {
 
         assertThat(currentBalance).isEqualTo(userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber()).getBalance());
         assertThat(currentBalanceStranger).isEqualTo(userStepsStranger.getAccountByNumber(createdAccountStranger.getAccountNumber()).getBalance());
+
+        //BD
+        AccountModel foundAccountFirst = userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber());
+        AccountModel foundAccountStranger= userStepsStranger.getAccountByNumber(createdAccountStranger .getAccountNumber());
+
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createdAccountFirst.getAccountNumber());
+        AccountDao accountDaoStranger = DataBaseSteps.getAccountByAccountNumber(createdAccountStranger.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(foundAccountFirst, accountDao).match();
+        DaoAndModelAssertions.assertThat(foundAccountStranger, accountDaoStranger).match();
     }
 
     @ParameterizedTest
@@ -126,5 +171,15 @@ public class TransferMoneyTest extends BaseTest {
 
         assertThat(currentBalanceFirst).isEqualTo(userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber()).getBalance());
         assertThat(currentBalanceSecond).isEqualTo(userSteps.getAccountByNumber(createdAccountSecond.getAccountNumber()).getBalance());
+
+        //BD
+        AccountModel foundAccountFirst = userSteps.getAccountByNumber(createdAccountFirst.getAccountNumber());
+        AccountModel foundAccountSecond = userSteps.getAccountByNumber(createdAccountSecond .getAccountNumber());
+
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createdAccountFirst.getAccountNumber());
+        AccountDao accountDaoStranger = DataBaseSteps.getAccountByAccountNumber(createdAccountSecond.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(foundAccountFirst, accountDao).match();
+        DaoAndModelAssertions.assertThat(foundAccountSecond, accountDaoStranger).match();
     }
 }

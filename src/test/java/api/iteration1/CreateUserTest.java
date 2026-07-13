@@ -1,10 +1,14 @@
 package api.iteration1;
 
 import api.base.BaseTest;
+import api.dao.UserDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomModelGenerator;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.comparison.ModelAssertions;
+import api.requests.steps.DataBaseSteps;
+import common.annotations.APIVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,9 +22,12 @@ import api.specs.ResponseSpecs;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 
 public class CreateUserTest extends BaseTest {
     @Test
+//    @APIVersion("with_validation_fix")
     public void adminCanCreateUserWithCorrectData() {
         CreateUserRequest createUserRequest = RandomModelGenerator.generate(CreateUserRequest.class);
 
@@ -31,6 +38,10 @@ public class CreateUserTest extends BaseTest {
                 .post(createUserRequest);
 
         ModelAssertions.assertThatModels(createUserRequest, createUserResponse).match();
+
+        //BD
+        UserDao userDao = DataBaseSteps.getUserByUsername(createUserRequest.getUsername());
+        DaoAndModelAssertions.assertThat(createUserResponse, userDao).match();
     }
 
     public static Stream<Arguments> userInvalidData() {
@@ -45,6 +56,7 @@ public class CreateUserTest extends BaseTest {
 
     @MethodSource("userInvalidData")
     @ParameterizedTest
+//    @APIVersion("with_validation_fix")
     public void adminCanNotCreateUserWithInvalidData(String username, String password, String role, String errorKey, List<String> errorValues) {
         CreateUserRequest createUserRequest = CreateUserRequest.builder()
                 .username(username)
@@ -56,5 +68,8 @@ public class CreateUserTest extends BaseTest {
                 Endpoint.ADMIN_USER,
                 ResponseSpecs.requestReturnsBadRequest(errorKey, errorValues))
                 .post(createUserRequest);
+
+        //BD
+        assertNull(DataBaseSteps.getUserByUsername(createUserRequest.getUsername()));
     }
 }

@@ -13,9 +13,11 @@ public enum BankAlert {
     NO_ACCOUNT_DEPOSIT("❌ Please select an account."),
     SUCCESSFULLY_TRANSFERRED("✅ Successfully transferred $%s to account %s!"),
     INVALID_TRANSFER("❌ Error: Invalid transfer: insufficient funds or invalid accounts"),
+    INVALID_TRANSFER_EXCEED_10000("❌ Error: Invalid transfer: insufficient funds or invalid accounts"),
     NO_DATA_FOR_TRANSFER("❌ Please fill all fields and confirm."),
     NAME_UPDATED_SUCCESSFULLY("✅ Name updated successfully!"),
-    NAME_INVALID("❌ Please enter a valid name.");
+    NAME_INVALID("❌ Please enter a valid name."),
+    NAME_INCORRECT("Name must contain two words with letters only");
 
 
     private final String message;

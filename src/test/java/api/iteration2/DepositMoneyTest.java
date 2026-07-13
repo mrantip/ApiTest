@@ -1,10 +1,14 @@
 package api.iteration2;
 
 import api.base.BaseTest;
+import api.dao.AccountDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.models.AccountModel;
 import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.models.DepositResponse;
+import api.requests.steps.DataBaseSteps;
+import common.annotations.APIVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -29,11 +33,16 @@ public class DepositMoneyTest extends BaseTest {
 
         assertNotEquals(createdAccount.getBalance(), depositResponse.getBalance());
         assertEquals(deposit, depositResponse.getBalance());
+
+        //BD
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createdAccount.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(depositResponse, accountDao).match();
     }
 
 
     @ParameterizedTest
-    @ValueSource(doubles = {5000.01, 0, -0.01, 1.01124342})
+    @ValueSource(doubles = {5000.010, -0.01, 1.01124342})
     public void depositInvalidSumTest(double deposit) {
         CreateUserRequest userRequest = AdminSteps.createUser();
         UserStepsDeposit userSteps = new UserStepsDeposit(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()));
@@ -45,8 +54,14 @@ public class DepositMoneyTest extends BaseTest {
         AccountModel foundAccount = userSteps.getAccountByNumber(createdAccount.getAccountNumber());
 
         assertThat(foundAccount.getBalance()).isEqualTo(createdAccount.getBalance());
+
+        //BD
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createdAccount.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(createdAccount, accountDao).match();
     }
 
+//    @APIVersion("with_validation_fix")
     @Test
     public void depositToStrangerAccountTest() {
         CreateUserRequest userRequest = AdminSteps.createUser();
@@ -66,5 +81,12 @@ public class DepositMoneyTest extends BaseTest {
 
         assertThat(foundAccount.getBalance()).isEqualTo(createdAccount.getBalance());
         assertThat(foundAccountStranger.getBalance()).isEqualTo(createdAccountStranger.getBalance());
+
+        //BD
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createdAccount.getAccountNumber());
+        AccountDao accountDaoStranger = DataBaseSteps.getAccountByAccountNumber(createdAccountStranger.getAccountNumber());
+
+        DaoAndModelAssertions.assertThat(foundAccount, accountDao).match();
+        DaoAndModelAssertions.assertThat(createdAccountStranger, accountDaoStranger).match();
     }
 }

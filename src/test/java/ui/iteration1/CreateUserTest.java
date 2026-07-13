@@ -1,6 +1,9 @@
 package ui.iteration1;
 
+import api.dao.UserDao;
+import api.dao.comparison.DaoAndModelAssertions;
 import api.requests.steps.AdminSteps;
+import api.requests.steps.DataBaseSteps;
 import com.codeborne.selenide.*;
 import api.generators.RandomModelGenerator;
 import api.models.CreateUserRequest;
@@ -14,6 +17,7 @@ import ui.pages.AdminPanel;
 import ui.pages.BankAlert;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -36,6 +40,10 @@ public class CreateUserTest extends BaseUiTest {
                 .findFirst().get();
 
         ModelAssertions.assertThatModels(newUser, createdUser).match();
+
+        //BD
+        UserDao userDao = DataBaseSteps.getUserByUsername(createdUser.getUsername());
+        DaoAndModelAssertions.assertThat(createdUser, userDao).match();
     }
 
     @Test
@@ -52,5 +60,8 @@ public class CreateUserTest extends BaseUiTest {
                 .filter(user -> user.getUsername().equals(newUser.getUsername())).count();
 
         assertThat(usersWithSameUsernameAsNewUser).isZero();
+
+        //BD
+        assertNull(DataBaseSteps.getUserByUsername(newUser.getUsername()));
     }
 }
