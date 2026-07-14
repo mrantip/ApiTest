@@ -1,5 +1,8 @@
 package ui.iteration2;
 
+import api.dao.AccountDao;
+import api.dao.comparison.DaoAndModelAssertions;
+import api.requests.steps.DataBaseSteps;
 import common.context.UserStepsWithAccountAndDeposit;
 import com.codeborne.selenide.*;
 import api.models.AccountModel;
@@ -35,6 +38,11 @@ public class DepositMoneyTest extends BaseUiTest {
         double expectedBalance = Double.parseDouble(deposit);
         assertThat(foundAccount.getBalance()).isEqualTo(expectedBalance);
         assertThat(foundAccount.getBalance()).isNotEqualTo(user.getAccount().getBalance());
+
+        //BD
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(accountNumber);
+
+        DaoAndModelAssertions.assertThat(foundAccount, accountDao).match();
     }
 
     @Test
@@ -57,6 +65,11 @@ public class DepositMoneyTest extends BaseUiTest {
         double expectedBalance = Double.parseDouble(actualAmount);
         assertThat(foundAccount.getBalance()).isEqualTo(expectedBalance);
         assertThat(foundAccount.getBalance()).isNotEqualTo(user.getAccount().getBalance());
+
+        //BD
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(accountNumber);
+
+        DaoAndModelAssertions.assertThat(foundAccount, accountDao).match();
     }
 
     @ParameterizedTest
@@ -76,6 +89,11 @@ public class DepositMoneyTest extends BaseUiTest {
 
         AccountModel foundAccount = user.getAccountByNumber(accountNumber);
         assertThat(foundAccount.getBalance()).isEqualTo(user.getAccount().getBalance());
+
+        //BD
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(accountNumber);
+
+        DaoAndModelAssertions.assertThat(foundAccount, accountDao).match();
     }
 
     @ParameterizedTest
@@ -95,6 +113,11 @@ public class DepositMoneyTest extends BaseUiTest {
 
         AccountModel foundAccount = user.getAccountByNumber(accountNumber);
         assertThat(foundAccount.getBalance()).isEqualTo(user.getAccount().getBalance());
+
+        //BD
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(accountNumber);
+
+        DaoAndModelAssertions.assertThat(foundAccount, accountDao).match();
     }
 
     @Test
@@ -111,5 +134,10 @@ public class DepositMoneyTest extends BaseUiTest {
 
         AccountModel foundAccount = user.getAccountByNumber(accountNumber);
         assertThat(foundAccount.getBalance()).isEqualTo(user.getAccount().getBalance());
+
+        //BD
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(accountNumber);
+
+        DaoAndModelAssertions.assertThat(foundAccount, accountDao).match();
     }
 }

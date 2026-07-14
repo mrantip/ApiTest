@@ -30,7 +30,7 @@ public class BaseUiTest extends BaseTest {
         Configuration.baseUrl = api.configs.Config.getProperty("uiBaseUrl");
         Configuration.browser = api.configs.Config.getProperty("browser");
         Configuration.browserSize = api.configs.Config.getProperty("browserSize");
-        Configuration.headless = true;
+        Configuration.headless = false;
         Configuration.timeout = 10000;
         Configuration.pageLoadTimeout = 60000;
         Configuration.reportsFolder = "build/reports/tests";

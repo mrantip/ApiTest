@@ -1,5 +1,8 @@
 package ui.iteration2;
 
+import api.dao.UserDao;
+import api.dao.comparison.DaoAndModelAssertions;
+import api.requests.steps.DataBaseSteps;
 import api.requests.steps.usersteps.UserSteps;
 import common.annotations.UserSession;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,10 +19,11 @@ public class SetNameTest extends BaseUiTest {
     private static final String DEFAULT_USERNAME = "noname";
 
     @ParameterizedTest
-    @ValueSource(strings = {"Вася Пупкин", "вАсЯ пУпКин", "ввввввввввввввввввв ааааааааааааааааааааааааааааааа"})
+    @ValueSource(strings = {"Dasha Pupkina", "pAhA tUtKiN", "DDDDDDDDDDDDDDDDDDDDDDDDDD DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"})
     @UserSession
     public void setValidNameTest(String newName) {
         UserSteps userSteps = SessionStorage.getSteps();
+        Long accountNumber = userSteps.getProfileInfo().getId();
 
         UserDashboard userDashboard = new UserDashboard().open();
 
@@ -35,13 +39,45 @@ public class SetNameTest extends BaseUiTest {
         assertEquals(newName, userDashboard.getWelcomeNameText());
 //        assertEquals(newName, userDashboard.getNameChangeButtonText());
         assertEquals(newName, userSteps.getProfileInfo().getName());
+
+        //BD
+        UserDao userDao = DataBaseSteps.getUserById(accountNumber);
+        DaoAndModelAssertions.assertThat(userSteps.getProfileInfo(), userDao).match();
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "Вася_Пупкин", "в_АсЯ3 пУп4@Кин", "вася", "Вася Пупкин Младший", " ", "а"})
+    @ValueSource(strings = {"Tora_Dora", "c_DcZ3", "fatid", "Neo Naruto Junior", "d"})
+    @UserSession
+    public void setIncorrectNameTest(String newName) {
+        UserSteps userSteps = SessionStorage.getSteps();
+        Long accountNumber = userSteps.getProfileInfo().getId();
+
+        UserDashboard userDashboard = new UserDashboard().open();
+
+        assertEquals(DEFAULT_USERNAME, userDashboard.getWelcomeNameText());
+        assertEquals(DEFAULT_USERNAME, userDashboard.getNameChangeButtonText());
+
+        userDashboard.changeNameClick()
+                .enterNewName(newName)
+                .saveChangesButtonClick()
+                .checkAlertMessageAndAccept(BankAlert.NAME_INCORRECT.getMessage())
+                .goHome();
+
+        assertNotEquals(newName, userDashboard.getWelcomeNameText());
+        assertNotEquals(newName, userDashboard.getNameChangeButtonText());
+        assertNotEquals(newName, userSteps.getProfileInfo().getName());
+
+        //BD
+        UserDao userDao = DataBaseSteps.getUserById(accountNumber);
+        DaoAndModelAssertions.assertThat(userSteps.getProfileInfo(), userDao).match();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { " ", ""})
     @UserSession
     public void setInvalidNameTest(String newName) {
         UserSteps userSteps = SessionStorage.getSteps();
+        Long accountNumber = userSteps.getProfileInfo().getId();
 
         UserDashboard userDashboard = new UserDashboard().open();
 
@@ -57,5 +93,9 @@ public class SetNameTest extends BaseUiTest {
         assertNotEquals(newName, userDashboard.getWelcomeNameText());
         assertNotEquals(newName, userDashboard.getNameChangeButtonText());
         assertNotEquals(newName, userSteps.getProfileInfo().getName());
+
+        //BD
+        UserDao userDao = DataBaseSteps.getUserById(accountNumber);
+        DaoAndModelAssertions.assertThat(userSteps.getProfileInfo(), userDao).match();
     }
 }

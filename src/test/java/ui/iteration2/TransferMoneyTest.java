@@ -1,5 +1,9 @@
 package ui.iteration2;
 
+import api.dao.AccountDao;
+import api.dao.comparison.DaoAndModelAssertions;
+import api.models.AccountModel;
+import api.requests.steps.DataBaseSteps;
 import common.context.UserStepsWithAccountAndDeposit;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
@@ -27,7 +31,6 @@ public class TransferMoneyTest extends BaseUiTest {
         double initialBalanceFirst = user1.getAccount().getBalance();;
         double initialBalanceSecond = user2.getAccount().getBalance();
 
-
         new UserDashboard().open()
                 .makeATransfer()
                 .chooseAnAccount(accountFirst)
@@ -40,10 +43,20 @@ public class TransferMoneyTest extends BaseUiTest {
 
         assertThat(user1.getAccountByNumber(accountFirst).getBalance()).isNotEqualTo(initialBalanceFirst);
         assertThat(user2.getAccountByNumber(accountSecond).getBalance()).isNotEqualTo(initialBalanceSecond);
+
+        //BD
+        AccountModel foundAccountFirst = user1.getAccountByNumber(accountFirst);
+        AccountModel foundAccountSecond = user2.getAccountByNumber(accountSecond);
+
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(accountFirst);
+        AccountDao accountDaoStranger = DataBaseSteps.getAccountByAccountNumber(accountSecond);
+
+        DaoAndModelAssertions.assertThat(foundAccountFirst, accountDao).match();
+        DaoAndModelAssertions.assertThat(foundAccountSecond, accountDaoStranger).match();
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"0", "-0.01", "10000.01"})
+    @ValueSource(strings = {"10000.01", "0", "-0.01"})
     @UserSession(value = 2,  withAccountForAll = true, withDeposit = true)
     public void transferInvalidSumToAccountTest(String transfer) {
         UserStepsWithAccountAndDeposit user1 = SessionStorage.getContext(1);
@@ -67,6 +80,16 @@ public class TransferMoneyTest extends BaseUiTest {
 
         assertThat(user1.getAccountByNumber(accountFirst).getBalance()).isEqualTo(initialBalanceFirst);
         assertThat(user2.getAccountByNumber(accountSecond).getBalance()).isEqualTo(initialBalanceSecond);
+
+        //BD
+        AccountModel foundAccountFirst = user1.getAccountByNumber(accountFirst);
+        AccountModel foundAccountStranger= user2.getAccountByNumber(accountSecond);
+
+        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(accountFirst);
+        AccountDao accountDaoStranger = DataBaseSteps.getAccountByAccountNumber(accountSecond);
+
+        DaoAndModelAssertions.assertThat(foundAccountFirst, accountDao).match();
+        DaoAndModelAssertions.assertThat(foundAccountStranger, accountDaoStranger).match();
     }
 
     @Test

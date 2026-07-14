@@ -1,11 +1,15 @@
 package api.specs;
 
 import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.filter.log.LogDetail;
+import io.restassured.http.ContentType;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 
 import java.util.List;
+
+import static org.hamcrest.Matchers.*;
 
 public class ResponseSpecs {
 
@@ -55,7 +59,7 @@ public class ResponseSpecs {
     public static ResponseSpecification requestReturnsBadRequest(String errorKey, List<String> errorValues) {
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
-                .expectBody(errorKey, Matchers.isIn(errorValues))
+                .expectBody(errorKey, hasItem(isIn(errorValues)))
                 .build();
     }
 
@@ -68,6 +72,14 @@ public class ResponseSpecs {
     public static ResponseSpecification requestReturnsUnauthorized() {
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .build();
+    }
+
+    public static ResponseSpecification getDefaultResponseSpec() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(200)
+                .expectContentType(ContentType.JSON)
+                .log(LogDetail.ALL)
                 .build();
     }
 }
