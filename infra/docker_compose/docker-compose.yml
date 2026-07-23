@@ -1,4 +1,34 @@
 services:
+  # НОВЫЙ бэкенд с fraud check (для тестирования с моками)
+  nbank:
+    image: nobugsme/nbank:with_fraud_check_with_transfer_fix
+    container_name: nbank-app
+    ports:
+      - "4112:4111"  # ← новый порт, чтобы не конфликтовать с другими
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nbank
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      # Все возможные варианты названий переменной
+      - FRAUD_DETECTION_SERVICE_URL=http://host.docker.internal:8090
+      - fraud.detection.service.url=http://host.docker.internal:8090
+      - fraud.service.url=http://host.docker.internal:8090
+      - FRAUD_SERVICE_URL=http://host.docker.internal:8090
+      - fraud-check.service.url=http://host.docker.internal:8090
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nbank-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4111/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   backend:
     image: nobugsme/nbank:with_database_with_fix
     ports:

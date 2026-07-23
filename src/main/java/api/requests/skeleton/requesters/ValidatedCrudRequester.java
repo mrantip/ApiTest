@@ -29,6 +29,10 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
         return (T) crudRequester.get(id).extract().as(endpoint.getResponseModel());
     }
 
+    public T getByPath(String path) {
+        return (T) crudRequester.getByPath(path).extract().as(endpoint.getResponseModel());
+    }
+
     public T get() {
         return (T) crudRequester.get().extract().as(endpoint.getResponseModel());
     }
