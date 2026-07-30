@@ -11,53 +11,24 @@ import common.annotations.APIVersion;
 import common.annotations.FraudCheckMock;
 import common.extensions.FraudCheckWireMockExtension;
 import common.extensions.TimingExtension;
-import org.assertj.core.api.SoftAssertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import static common.config.TestConstants.*;
+import static common.factory.TransferResponseFactory.createApprovedResponse;
+import static common.factory.TransferResponseFactory.createNoCheckStatusResponse;
 
 @ExtendWith({TimingExtension.class, FraudCheckWireMockExtension.class})
 public class TransferWithFraudCheckTest extends BaseTest {
 
-    @BeforeEach
-    public void setupTest() {
-        this.softly = new SoftAssertions();
-
-        // Проверяем, что WireMock доступен
-        String fraudUrl = System.getProperty("FRAUD_DETECTION_SERVICE_URL");
-        System.out.println("✅ FRAUD_DETECTION_SERVICE_URL: " + fraudUrl);
-
-        // Проверяем переменные окружения
-        String envUrl = System.getenv("FRAUD_DETECTION_SERVICE_URL");
-        System.out.println("✅ FRAUD_DETECTION_SERVICE_URL (Env): " + envUrl);
-
-        if (fraudUrl == null || fraudUrl.isEmpty()) {
-            System.err.println("❌ FRAUD_DETECTION_SERVICE_URL is not set!");
-        }
-
-        // Проверяем доступность WireMock
-        if (fraudUrl != null && !fraudUrl.isEmpty()) {
-            try {
-                java.net.HttpURLConnection connection = (java.net.HttpURLConnection)
-                        new java.net.URL(fraudUrl + "/__admin/health").openConnection();
-                connection.setRequestMethod("GET");
-                connection.connect();
-                int responseCode = connection.getResponseCode();
-                System.out.println("✅ WireMock health check: " + responseCode);
-            } catch (Exception e) {
-                System.err.println("❌ WireMock not accessible: " + e.getMessage());
-            }
-        }
-    }
-
     @Test
     @FraudCheckMock(
-            status = "SUCCESS",
-            decision = "APPROVED",
-            riskScore = 0.2,
-            reason = "Low risk transaction",
-            requiresManualReview = false,
-            additionalVerificationRequired = false
+            status = FRAUD_STATUS_SUCCESS,
+            decision = FRAUD_DECISION_APPROVED,
+            riskScore = FRAUD_RISK_SCORE_LOW,
+            reason = FRAUD_REASON_LOW_RISK,
+            requiresManualReview = FRAUD_NO_MANUAL_REVIEW,
+            additionalVerificationRequired = FRAUD_NO_VERIFICATION
     )
     @APIVersion("with_fraud_check")
     public void testTransferWithFraudCheck() {
@@ -67,8 +38,8 @@ public class TransferWithFraudCheckTest extends BaseTest {
 
         CreateAccountResponse account1 = userSteps.createAccount();
 
-        double depositAmount = Math.random() * 4999.9 + 0.1;
-        DepositResponse depositResponse = userSteps.depositFraud(account1.getAccountNumber(), depositAmount);
+        double depositAmount = Math.random() * MAX_DEPOSIT + 0.1;
+        userSteps.depositFraud(account1.getAccountNumber(), depositAmount);
 
         CreateUserRequest user2 = AdminSteps.createUser();
         UserStepsDeposit userSteps2 = new UserStepsDeposit(RequestSpecs.authAsUser(user2.getUsername(), user2.getPassword()));
@@ -83,17 +54,10 @@ public class TransferWithFraudCheckTest extends BaseTest {
 
         softly.assertThat(transferResponse).isNotNull();
 
-        TransferResponse expectedResponse = TransferResponse.builder()
-                .status("APPROVED")
-                .message("Transfer approved and processed immediately")
-                .amount(transferAmount)
-                .senderAccountId(account1.getId())
-                .receiverAccountId(account2.getId())
-                .fraudRiskScore(0.2)
-                .fraudReason("Low risk transaction")
-                .requiresManualReview(false)
-                .requiresVerification(false)
-                .build();
+        TransferResponse expectedResponse = createApprovedResponse(
+                transferAmount,
+                account1.getId(),
+                account2.getId());
 
         ModelAssertions.assertThatModels(expectedResponse, transferResponse).match();
     }
@@ -101,8 +65,8 @@ public class TransferWithFraudCheckTest extends BaseTest {
     @Test
     @FraudCheckMock(
             // GET /fraud-check/{transactionId}
-            checkStatus = "NO_FRAUD_CHECK_REQUIRED",
-            note = "This transaction does not require fraud checking."
+            checkStatus = FRAUD_CHECK_STATUS_NO_CHECK,
+            note = FRAUD_CHECK_NOTE_NO_CHECK
     )
     @APIVersion("with_fraud_check")
     public void testTransferTransaction() {
@@ -112,8 +76,8 @@ public class TransferWithFraudCheckTest extends BaseTest {
 
         CreateAccountResponse account1 = userSteps.createAccount();
 
-        double depositAmount = Math.random() * 4999.9 + 0.1;
-        DepositResponse depositResponse = userSteps.depositFraud(account1.getAccountNumber(), depositAmount);
+        double depositAmount = Math.random() * MAX_DEPOSIT + 0.1;
+        userSteps.depositFraud(account1.getAccountNumber(), depositAmount);
 
         CreateUserRequest user2 = AdminSteps.createUser();
         UserStepsDeposit userSteps2 = new UserStepsDeposit(RequestSpecs.authAsUser(user2.getUsername(), user2.getPassword()));
@@ -126,22 +90,13 @@ public class TransferWithFraudCheckTest extends BaseTest {
                 transferAmount
         );
 
-        String id = transferResponse.getTransactionId().toString();
-        userStepsTransfer.transferWithFraudStatus(id);
 
         FraudCheckResponse statusResponse = userStepsTransfer.transferWithFraudStatus(
                 String.valueOf(transferResponse.getTransactionId())
         );
 
-        softly.assertThat(statusResponse.getTransactionId())
-                .as("Transaction ID должен совпадать")
-                .isEqualTo(String.valueOf(transferResponse.getTransactionId()));
-        softly.assertThat(statusResponse.getStatus())
-                .as("Статус должен быть NO_FRAUD_CHECK_REQUIRED")
-                .isEqualTo("NO_FRAUD_CHECK_REQUIRED");
-        softly.assertThat(statusResponse.getNote())
-                .as("Note должен быть корректным")
-                .isEqualTo("This transaction does not require fraud checking.");
+        FraudCheckResponse expectedResponse = createNoCheckStatusResponse(String.valueOf(transferResponse.getTransactionId()));
 
+        ModelAssertions.assertThatModels(expectedResponse, statusResponse).match();
     }
 }
