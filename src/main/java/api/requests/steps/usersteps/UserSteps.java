@@ -13,8 +13,8 @@ import api.specs.ResponseSpecs;
 import java.util.List;
 
 public class UserSteps {
-    private String username;
-    private String password;
+    protected String username;
+    protected String password;
 
     public UserSteps(String username, String password) {
         this.username = username;

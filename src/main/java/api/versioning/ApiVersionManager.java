@@ -14,7 +14,8 @@ public class ApiVersionManager {
     private static String currentApiVersion = Config.getActiveBackendVersion();
     private static final List<String> SUPPORTED_VERSIONS = Arrays.asList(
             "with_validation_fix",
-            "with_database_with_fix"
+            "with_database_with_fix",
+            "with_fraud_check"
     );
 
     public static String getApiVersionForTest(Class<?> testClass, Method testMethod) {

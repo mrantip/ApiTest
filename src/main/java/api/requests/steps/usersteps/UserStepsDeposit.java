@@ -1,6 +1,7 @@
 package api.requests.steps.usersteps;
 
 import api.models.CreateUserRequest;
+import api.models.DepositFraudRequest;
 import api.specs.RequestSpecs;
 import io.restassured.specification.RequestSpecification;
 import api.models.DepositRequest;
@@ -27,6 +28,12 @@ public class UserStepsDeposit extends UserSteps {
                 .post(buildDepositRequest(accountNumber, money));
     }
 
+    public DepositResponse depositFraud(String accountNumber, double money) {
+        return new ValidatedCrudRequester<DepositResponse>(authSpec, Endpoint.DEPOSIT,
+                ResponseSpecs.requestReturnsOK())
+                .post(buildDepositFraudRequest(accountNumber, money));
+    }
+
     public void depositMaxMultipleTimes(String accountNumber, int times) {
         for (int i = 0; i < times; i++) {
             deposit(accountNumber, MAX_DEPOSIT_AMOUNT);
@@ -51,6 +58,14 @@ public class UserStepsDeposit extends UserSteps {
         return DepositRequest.builder()
                 .id(getAccountByNumber(accountNumber).getId())
                 .balance(money)
+                .build();
+    }
+
+    private DepositFraudRequest buildDepositFraudRequest(String accountNumber, double money) {
+        return DepositFraudRequest.builder()
+                .accountId(getAccountByNumber(accountNumber).getId())
+                .amount(money)
+                .description("Test deposit with fraud check")
                 .build();
     }
 }

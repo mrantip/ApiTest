@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TransferRequest extends BaseModel {
-    private long senderAccountId;
-    private long receiverAccountId;
+public class DepositFraudRequest extends BaseModel {
+    private long accountId;
     private double amount;
     private String description;
 }

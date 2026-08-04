@@ -65,6 +65,15 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
                 .spec(responseSpecification);
     }
 
+    public ValidatableResponse getByPath(String path) {
+        return given()
+                .spec(requestSpecification)
+                .get(path)  // ← используем переданный путь без изменений
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
+    }
+
     @Override
     public ValidatableResponse update(BaseModel model) {
         var body = model == null ? "" : model;
