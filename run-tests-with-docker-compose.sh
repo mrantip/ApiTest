@@ -22,6 +22,39 @@ docker_compose_cmd() {
     fi
 }
 
+cleanup() {
+    local exit_code=$?
+
+    echo ""
+    echo "ОСТАНОВКА ОКРУЖЕНИЯ"
+
+    # Проверяем, что контейнер с тестами удален (--rm уже должен был сделать это)
+    if docker ps -a --format '{{.Names}}' | grep -q "^$TEST_CONTAINER_NAME$"; then
+        echo "⚠️ Контейнер с тестами не был удален автоматически. Удаляем вручную..."
+        docker rm -f "$TEST_CONTAINER_NAME" 2>/dev/null || true
+    else
+        echo "✅ Контейнер с тестами удален автоматически (--rm)"
+    fi
+
+    # Останавливаем Docker Compose
+    echo "⏹️ Остановка Docker Compose..."
+    docker_compose_cmd down -v --remove-orphans 2>/dev/null || true
+
+    echo "✅ Окружение остановлено"
+    echo ""
+
+    if [ $exit_code -eq 0 ]; then
+        echo "✅ Все тесты успешно пройдены! 🎉"
+    else
+        echo "❌ Тесты завершились с ошибкой (код: $exit_code)"
+        echo "💡 Проверьте логи выше для получения подробной информации."
+    fi
+
+    exit $exit_code
+}
+
+trap cleanup EXIT INT TERM
+
 main() {
 
     echo "ПОДНЯТИЕ ТЕСТОВОГО ОКРУЖЕНИЯ"
